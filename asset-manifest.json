@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/reactseven/static/css/main.de5ed08f.css",
+    "main.js": "/reactseven/static/js/main.c2d63c39.js",
+    "index.html": "/reactseven/index.html",
+    "main.de5ed08f.css.map": "/reactseven/static/css/main.de5ed08f.css.map",
+    "main.c2d63c39.js.map": "/reactseven/static/js/main.c2d63c39.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.de5ed08f.css",
+    "static/js/main.c2d63c39.js"
+  ]
+}
