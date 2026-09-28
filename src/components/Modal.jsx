@@ -1,31 +1,38 @@
-import { useEffect } from 'react';
+import { Component } from 'react';
 
-export default function Modal({ image, onClose }) {
-  useEffect(() => {
-    const handleKeyDown = event => {
-      if (event.code === 'Escape') {
-        onClose();
-      }
-    };
+export default class Modal extends Component {
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
 
-    window.addEventListener('keydown', handleKeyDown);
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+  }
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
-
-  const handleBackdropClick = event => {
-    if (event.target === event.currentTarget) {
-      onClose();
+  handleKeyDown = event => {
+    if (event.code === 'Escape') {
+      this.props.onClose();
     }
   };
 
-  return (
-    <div className="overlay" onClick={handleBackdropClick}>
-      <div className="modal">
-        <img src={image.src} alt={image.alt} />
+  handleBackdropClick = event => {
+    if (event.target === event.currentTarget) {
+      this.props.onClose();
+    }
+  };
+
+  render() {
+    const { image } = this.props;
+
+    return (
+      <div
+        className="overlay"
+        onClick={this.handleBackdropClick}
+      >
+        <div className="modal">
+          <img src={image.src} alt={image.alt} />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }

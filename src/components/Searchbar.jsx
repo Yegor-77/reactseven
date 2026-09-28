@@ -1,35 +1,49 @@
-import { useState } from 'react';
+import { Component } from 'react';
 
-export default function Searchbar({ onSubmit }) {
-  const [query, setQuery] = useState('');
-
-  const handleChange = event => {
-    setQuery(event.target.value);
+export default class Searchbar extends Component {
+  state = {
+    query: '',
   };
 
-  const handleSubmit = event => {
+  handleChange = event => {
+    this.setState({
+      query: event.target.value,
+    });
+  };
+
+  handleSubmit = event => {
     event.preventDefault();
 
-    if (query.trim() === '') {
+    const query = this.state.query.trim();
+
+    if (query === '') {
       return;
     }
 
-    onSubmit(query.trim());
-    setQuery('');
+    this.props.onSubmit(query);
+
+    this.setState({
+      query: '',
+    });
   };
 
-  return (
-    <header className="searchbar">
-      <form className="form" onSubmit={handleSubmit}>
-        <button type="submit">Search</button>
+  render() {
+    return (
+      <header className="searchbar">
+        <form
+          className="form"
+          onSubmit={this.handleSubmit}
+        >
+          <button type="submit">Search</button>
 
-        <input
-          type="text"
-          value={query}
-          onChange={handleChange}
-          placeholder="Search images and photos"
-        />
-      </form>
-    </header>
-  );
+          <input
+            type="text"
+            value={this.state.query}
+            onChange={this.handleChange}
+            placeholder="Search images and photos"
+          />
+        </form>
+      </header>
+    );
+  }
 }

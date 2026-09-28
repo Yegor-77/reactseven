@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Component } from 'react';
 
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
@@ -10,98 +10,130 @@ import { fetchImages } from './components/services/pixabay-api';
 
 import './App.css';
 
-export default function App() {
-  const [query, setQuery] = useState('');
-  const [images, setImages] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [modalImage, setModalImage] = useState(null);
-  const [totalHits, setTotalHits] = useState(0);
+export default class App extends Component {
+  state = {
+    query: '',
+    images: [],
+    page: 1,
+    loading: false,
+    error: false,
+    modalImage: null,
+    totalHits: 0,
+  };
 
-  useEffect(() => {
+  componentDidUpdate(prevProps, prevState) {
+    const { query, page } = this.state;
+
+    if (prevState.query !== query || prevState.page !== page) {
+      this.getImages();
+    }
+  }
+
+  async getImages() {
+    const { query, page } = this.state;
+
     if (!query) {
       return;
     }
 
-    async function getImages() {
-      try {
-        setLoading(true);
-        setError(false);
+    try {
+      this.setState({
+        loading: true,
+        error: false,
+      });
 
-        const data = await fetchImages(query, page);
+      const data = await fetchImages(query, page);
 
-        setImages(prevImages =>
+      this.setState(prevState => ({
+        images:
           page === 1
             ? data.hits
-            : [...prevImages, ...data.hits]
-        );
-
-        setTotalHits(data.totalHits);
-      } catch (error) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+            : [...prevState.images, ...data.hits],
+        totalHits: data.totalHits,
+      }));
+    } catch (error) {
+      this.setState({
+        error: true,
+      });
+    } finally {
+      this.setState({
+        loading: false,
+      });
     }
+  }
 
-    getImages();
-  }, [query, page]);
-
-  const handleSearch = newQuery => {
-    setQuery(newQuery);
-    setPage(1);
-    setImages([]);
-    setTotalHits(0);
-  };
-
-  const handleLoadMore = () => {
-    setPage(prevPage => prevPage + 1);
-  };
-
-  const handleImageClick = (src, alt) => {
-    setModalImage({
-      src,
-      alt,
+  handleSearch = newQuery => {
+    this.setState({
+      query: newQuery,
+      page: 1,
+      images: [],
+      totalHits: 0,
     });
   };
 
-  const closeModal = () => {
-    setModalImage(null);
+  handleLoadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
   };
 
-  const showLoadMore =
-    images.length > 0 &&
-    images.length < totalHits &&
-    !loading;
+  handleImageClick = (src, alt) => {
+    this.setState({
+      modalImage: {
+        src,
+        alt,
+      },
+    });
+  };
 
-  return (
-    <div className="app">
-      <Searchbar onSubmit={handleSearch} />
+  closeModal = () => {
+    this.setState({
+      modalImage: null,
+    });
+  };
 
-      {error && (
-        <p className="error">
-          Something went wrong. Please try again.
-        </p>
-      )}
+  render() {
+    const {
+      images,
+      loading,
+      error,
+      modalImage,
+      totalHits,
+    } = this.state;
 
-      <ImageGallery
-        images={images}
-        onImageClick={handleImageClick}
-      />
+    const showLoadMore =
+      images.length > 0 &&
+      images.length < totalHits &&
+      !loading;
 
-      {loading && <Loader />}
+    return (
+      <div className="app">
+        <Searchbar onSubmit={this.handleSearch} />
 
-      {showLoadMore && (
-        <Button onClick={handleLoadMore} />
-      )}
+        {error && (
+          <p className="error">
+            Something went wrong. Please try again.
+          </p>
+        )}
 
-      {modalImage && (
-        <Modal
-          image={modalImage}
-          onClose={closeModal}
+        <ImageGallery
+          images={images}
+          onImageClick={this.handleImageClick}
         />
-      )}
-    </div>
-  );
+
+        {loading && <Loader />}
+
+        {showLoadMore && (
+          <Button onClick={this.handleLoadMore} />
+        )}
+
+        {modalImage && (
+          <Modal
+            image={modalImage}
+            onClose={this.closeModal}
+          />
+        )}
+      </div>
+    );
+  }
 }
